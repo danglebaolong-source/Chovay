@@ -1,6 +1,8 @@
-// Service worker: cache toàn bộ app để dùng được offline sau khi đã cài.
-// Khi cập nhật app, đổi CACHE_NAME (vd v2, v3...) để buộc tải bản mới.
-const CACHE_NAME = 'cho-vay-cache-v3';
+// Service worker: cache app để dùng offline sau khi đã cài.
+// HTML chính (index.html) luôn ưu tiên tải bản mới nhất từ mạng (network-first),
+// chỉ dùng bản cache khi không có mạng — để không bị kẹt ở bản cũ sau khi cập nhật.
+// Các file tĩnh khác (icon, manifest) dùng cache-first cho nhanh + đỡ tốn dữ liệu.
+const CACHE_NAME = 'cho-vay-cache-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -25,14 +27,35 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+function isHtmlRequest(request) {
+  if (request.mode === 'navigate') return true;
+  const url = new URL(request.url);
+  return url.pathname.endsWith('/') || url.pathname.endsWith('index.html');
+}
+
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request).then((response) => {
+  const request = event.request;
+
+  if (isHtmlRequest(request)) {
+    // Network-first cho trang HTML chính: luôn cố lấy bản mới nhất.
+    event.respondWith(
+      fetch(request, { cache: 'no-store' }).then((response) => {
         const copy = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+        return response;
+      }).catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Cache-first cho các file tĩnh còn lại.
+  event.respondWith(
+    caches.match(request).then((cached) => {
+      if (cached) return cached;
+      return fetch(request).then((response) => {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
         return response;
       }).catch(() => cached);
     })
