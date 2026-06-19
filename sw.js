@@ -1,6 +1,6 @@
 // Service worker: cache toàn bộ app để dùng được offline sau khi đã cài.
 // Khi cập nhật app, đổi CACHE_NAME (vd v2, v3...) để buộc tải bản mới.
-const CACHE_NAME = 'cho-vay-cache-v1';
+const CACHE_NAME = 'cho-vay-cache-v2';
 const ASSETS = [
   './',
   './index.html',
