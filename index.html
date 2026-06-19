@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <title>Quản Lý Cho Vay Cá Nhân</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2563eb">
@@ -20,7 +20,7 @@
     --danger-bg:#fef2f2; --success:#16a34a; --success-bg:#f0fdf4; --warn:#d97706; --warn-bg:#fffbeb;
   }
   *{box-sizing:border-box;}
-  html,body{margin:0;width:100%;overflow-x:hidden;}
+  html,body{margin:0;width:100%;overflow-x:hidden;overscroll-behavior-x:none;touch-action:pan-y;}
   body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
   header{background:var(--primary);color:#fff;padding:16px 24px;padding-top:calc(16px + env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
   header h1{margin:0;font-size:20px;}
@@ -54,7 +54,7 @@
   .badge.warn{background:var(--warn-bg);color:var(--warn);}
   .badge.danger{background:var(--danger-bg);color:var(--danger);}
   .badge.muted{background:#f1f5f9;color:var(--muted);}
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);align-items:center;justify-content:center;z-index:100;}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);align-items:center;justify-content:center;z-index:100;overscroll-behavior:contain;touch-action:pan-y;}
   .modal-overlay.active{display:flex;}
   .modal{background:#fff;border-radius:10px;padding:22px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;}
   .modal h3{margin-top:0;}
