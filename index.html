@@ -2,12 +2,17 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
 <title>Quản Lý Cho Vay Cá Nhân</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#2563eb">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
+<!-- iOS: bắt buộc thêm các meta này để PWA chạy đúng kiểu standalone (không có thanh Safari),
+     vì Safari/iOS không đọc "display:standalone" trong manifest.json như Android/Chrome. -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cho Vay">
 <style>
   :root{
     --primary:#2563eb; --primary-dark:#1d4ed8; --bg:#f4f6fb; --card:#ffffff;
@@ -15,8 +20,9 @@
     --danger-bg:#fef2f2; --success:#16a34a; --success-bg:#f0fdf4; --warn:#d97706; --warn-bg:#fffbeb;
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
-  header{background:var(--primary);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+  html,body{margin:0;width:100%;overflow-x:hidden;}
+  body{font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  header{background:var(--primary);color:#fff;padding:16px 24px;padding-top:calc(16px + env(safe-area-inset-top));display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
   header h1{margin:0;font-size:20px;}
   header .actions button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:6px 12px;margin-left:8px;cursor:pointer;font-size:13px;}
   header .actions button:hover{background:rgba(255,255,255,.3);}
@@ -32,7 +38,8 @@
   .card .value{font-size:22px;font-weight:700;margin-top:6px;}
   .panel{background:var(--card);border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid var(--border);margin-bottom:18px;}
   .panel h2{margin-top:0;font-size:16px;}
-  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  .table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{width:100%;min-width:480px;border-collapse:collapse;font-size:13.5px;}
   th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--border);}
   th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;}
   tr:hover{background:#f8fafc;}
@@ -73,8 +80,15 @@
   .tabs-sub button.active{background:var(--primary);color:#fff;border-color:var(--primary);}
   .amount-pos{color:var(--success);font-weight:600;}
   .amount-neg{color:var(--danger);font-weight:600;}
-  footer{text-align:center;color:var(--muted);font-size:12px;padding:18px;}
-  @media(max-width:600px){.grid2{grid-template-columns:1fr;}}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:18px;padding-bottom:calc(18px + env(safe-area-inset-bottom));}
+  @media(max-width:600px){
+    .grid2{grid-template-columns:1fr;}
+    main{padding:14px 14px;}
+    header{padding-left:14px;padding-right:14px;}
+    header h1{font-size:17px;}
+    #storageBar{padding-left:14px;padding-right:14px;font-size:12px;}
+    .cards{grid-template-columns:1fr 1fr;}
+  }
 </style>
 </head>
 <body>
@@ -120,10 +134,10 @@
       <button class="btn" onclick="openBorrowerModal()">+ Thêm người vay</button>
     </div>
     <div class="panel">
-      <table>
+      <div class="table-wrap"><table>
         <thead><tr><th>Họ tên</th><th>Điện thoại</th><th>Số khoản vay</th><th>Tổng dư nợ</th><th></th></tr></thead>
         <tbody id="borrowerTableBody"></tbody>
-      </table>
+      </table></div>
       <div class="empty" id="borrowerEmpty" style="display:none;">Chưa có người vay nào. Bấm "+ Thêm người vay" để bắt đầu.</div>
     </div>
   </div>
@@ -135,10 +149,10 @@
       <button class="btn" onclick="openLoanModal()">+ Tạo khoản vay</button>
     </div>
     <div class="panel">
-      <table>
+      <div class="table-wrap"><table>
         <thead><tr><th>Người vay</th><th>Gốc</th><th>Loại lãi</th><th>Ngày vay</th><th>Trạng thái</th><th></th></tr></thead>
         <tbody id="loanTableBody"></tbody>
-      </table>
+      </table></div>
       <div class="empty" id="loanEmpty" style="display:none;">Chưa có khoản vay nào.</div>
     </div>
   </div>
@@ -909,7 +923,7 @@ function renderCompoundScheduleHtml(loan){
       <h2 style="margin:0;">Lịch trình lãi kép dự kiến${hasTermEnd ? ' đến ngày '+fmtDate(loan.termEndDate) : ' (tạm tính đến hôm nay — nhập ngày đến hạn để xem trọn kỳ hạn)'}</h2>
     </div>
     <div class="helptext">Bảng này tính theo hợp đồng (gốc, lãi suất, ngày vay) — KHÔNG trừ các khoản đã thanh toán thực tế. Dùng để xem trước số tiền sẽ phải trả nếu không thanh toán gì cho đến từng kỳ ${unitLabel}.</div>
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr><th>Kỳ</th><th>Từ ngày</th><th>Đến ngày</th><th>Dư nợ đầu kỳ</th><th>Lãi kỳ này</th><th>Tổng nợ cuối kỳ</th></tr></thead>
       <tbody>
         ${rows.map(r=>`
@@ -922,7 +936,7 @@ function renderCompoundScheduleHtml(loan){
             <td><strong>${fmtMoney(r.closing)}</strong></td>
           </tr>`).join('')}
       </tbody>
-    </table>
+    </table></div>
   </div>`;
 }
 
@@ -962,7 +976,7 @@ function viewLoanDetail(id){
         <h2 style="margin:0;">Lịch sử thanh toán</h2>
         <button class="btn" onclick="openPaymentModal('${l.id}')">+ Ghi nhận thanh toán</button>
       </div>
-      <table>
+      <div class="table-wrap"><table>
         <thead><tr><th>Ngày</th><th>Lãi trả</th><th>Gốc trả</th><th>Ghi chú</th><th></th></tr></thead>
         <tbody>
           ${payments.length===0 ? '' : payments.map(p=>`
@@ -974,7 +988,7 @@ function viewLoanDetail(id){
               <td><button class="btn danger small" onclick="deletePayment('${p.id}','${l.id}')">Xóa</button></td>
             </tr>`).join('')}
         </tbody>
-      </table>
+      </table></div>
       ${payments.length===0 ? '<div class="empty">Chưa có thanh toán nào được ghi nhận.</div>' : ''}
     </div>
   `;
@@ -1042,7 +1056,7 @@ function renderDashboard(){
     .sort((a,b)=> b.state.outstandingInterest - a.state.outstandingInterest);
   document.getElementById('dashAlerts').innerHTML = alertList.length===0
     ? '<div class="empty">Không có khoản vay nào còn lãi chưa thanh toán 🎉</div>'
-    : `<table><thead><tr><th>Người vay</th><th>Gốc còn lại</th><th>Lãi chưa trả</th><th></th></tr></thead><tbody>
+    : `<div class="table-wrap"><table><thead><tr><th>Người vay</th><th>Gốc còn lại</th><th>Lãi chưa trả</th><th></th></tr></thead><tbody>
         ${alertList.map(({loan,state})=>{
           const borrower = DB.borrowers.find(b=>b.id===loan.borrowerId);
           return `<tr style="cursor:pointer" onclick="viewLoanDetail('${loan.id}')">
@@ -1052,11 +1066,11 @@ function renderDashboard(){
             <td><button class="btn secondary small" onclick="event.stopPropagation();viewLoanDetail('${loan.id}')">Xem</button></td>
           </tr>`;
         }).join('')}
-      </tbody></table>`;
+      </tbody></table></div>`;
 
   document.getElementById('dashLoans').innerHTML = activeLoans.length===0
     ? '<div class="empty">Chưa có khoản vay đang hoạt động.</div>'
-    : `<table><thead><tr><th>Người vay</th><th>Gốc</th><th>Loại lãi</th><th>Gốc còn lại</th><th>Lãi chưa trả</th></tr></thead><tbody>
+    : `<div class="table-wrap"><table><thead><tr><th>Người vay</th><th>Gốc</th><th>Loại lãi</th><th>Gốc còn lại</th><th>Lãi chưa trả</th></tr></thead><tbody>
         ${states.map(({loan,state})=>{
           const borrower = DB.borrowers.find(b=>b.id===loan.borrowerId);
           return `<tr style="cursor:pointer" onclick="viewLoanDetail('${loan.id}')">
@@ -1067,7 +1081,7 @@ function renderDashboard(){
             <td>${fmtMoney(state.outstandingInterest)}</td>
           </tr>`;
         }).join('')}
-      </tbody></table>`;
+      </tbody></table></div>`;
 }
 
 /* ===================== CONFIRM HELPER ===================== */
