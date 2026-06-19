@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản Lý Cho Vay Cá Nhân</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2563eb">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<style>
+  :root{
+    --primary:#2563eb; --primary-dark:#1d4ed8; --bg:#f4f6fb; --card:#ffffff;
+    --text:#1e293b; --muted:#64748b; --border:#e2e8f0; --danger:#dc2626;
+    --danger-bg:#fef2f2; --success:#16a34a; --success-bg:#f0fdf4; --warn:#d97706; --warn-bg:#fffbeb;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  header{background:var(--primary);color:#fff;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+  header h1{margin:0;font-size:20px;}
+  header .actions button{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:6px 12px;margin-left:8px;cursor:pointer;font-size:13px;}
+  header .actions button:hover{background:rgba(255,255,255,.3);}
+  nav{display:flex;background:#fff;border-bottom:1px solid var(--border);padding:0 16px;overflow-x:auto;}
+  nav button{background:none;border:none;padding:14px 18px;font-size:14px;cursor:pointer;color:var(--muted);border-bottom:3px solid transparent;white-space:nowrap;}
+  nav button.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600;}
+  main{padding:20px 24px;max-width:1200px;margin:0 auto;}
+  .view{display:none;}
+  .view.active{display:block;}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px;}
+  .card{background:var(--card);border-radius:10px;padding:16px 18px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid var(--border);}
+  .card .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .card .value{font-size:22px;font-weight:700;margin-top:6px;}
+  .panel{background:var(--card);border-radius:10px;padding:18px;box-shadow:0 1px 3px rgba(0,0,0,.06);border:1px solid var(--border);margin-bottom:18px;}
+  .panel h2{margin-top:0;font-size:16px;}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;}
+  tr:hover{background:#f8fafc;}
+  .btn{display:inline-block;background:var(--primary);color:#fff;border:none;border-radius:6px;padding:8px 14px;cursor:pointer;font-size:13.5px;}
+  .btn:hover{background:var(--primary-dark);}
+  .btn.secondary{background:#fff;color:var(--primary);border:1px solid var(--primary);}
+  .btn.danger{background:#fff;color:var(--danger);border:1px solid var(--danger);}
+  .btn.small{padding:4px 10px;font-size:12px;}
+  .row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .badge{display:inline-block;padding:2px 9px;border-radius:12px;font-size:11.5px;font-weight:600;}
+  .badge.ok{background:var(--success-bg);color:var(--success);}
+  .badge.warn{background:var(--warn-bg);color:var(--warn);}
+  .badge.danger{background:var(--danger-bg);color:var(--danger);}
+  .badge.muted{background:#f1f5f9;color:var(--muted);}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);align-items:center;justify-content:center;z-index:100;}
+  .modal-overlay.active{display:flex;}
+  .modal{background:#fff;border-radius:10px;padding:22px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;}
+  .modal h3{margin-top:0;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:13px;font-weight:600;margin-bottom:5px;color:var(--text);}
+  .field small{color:var(--muted);display:block;margin-top:4px;}
+  input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:6px;font-size:14px;font-family:inherit;}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--primary);outline-offset:0;border-color:var(--primary);}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .empty{text-align:center;color:var(--muted);padding:30px 0;font-size:14px;}
+  .link{color:var(--primary);cursor:pointer;text-decoration:underline;}
+  .helptext{font-size:12.5px;color:var(--muted);background:#f8fafc;border:1px solid var(--border);border-radius:6px;padding:10px 12px;margin-bottom:14px;}
+  .tabs-sub{display:flex;gap:6px;margin-bottom:14px;}
+  #storageBar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 24px;font-size:13px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
+  #storageBar.mode-local{background:#f1f5f9;color:var(--muted);}
+  #storageBar.mode-linked{background:var(--success-bg);color:var(--success);}
+  #storageBar.mode-needsperm{background:var(--warn-bg);color:var(--warn);}
+  #storageBar button{border:1px solid currentColor;background:transparent;color:inherit;border-radius:6px;padding:4px 10px;font-size:12.5px;cursor:pointer;}
+  #storageBar button:hover{background:rgba(0,0,0,.06);}
+  #storageBar .storageActions{display:flex;gap:6px;flex-wrap:wrap;}
+  .tabs-sub button{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer;font-size:13px;}
+  .tabs-sub button.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+  .amount-pos{color:var(--success);font-weight:600;}
+  .amount-neg{color:var(--danger);font-weight:600;}
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:18px;}
+  @media(max-width:600px){.grid2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>💰 Quản Lý Cho Vay Cá Nhân</h1>
+  <div class="actions">
+    <button onclick="exportData()">Xuất dữ liệu (.json)</button>
+    <button onclick="document.getElementById('importFile').click()">Nhập dữ liệu</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+  </div>
+</header>
+
+<div id="storageBar" class="mode-local">
+  <span id="storageStatusText">Đang kiểm tra nơi lưu trữ dữ liệu…</span>
+  <span class="storageActions" id="storageActionsBtns"></span>
+</div>
+
+<nav>
+  <button class="tab-btn active" data-tab="dashboard">📊 Tổng quan</button>
+  <button class="tab-btn" data-tab="borrowers">👤 Người vay</button>
+  <button class="tab-btn" data-tab="loans">📄 Khoản vay</button>
+</nav>
+
+<main>
+  <!-- DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <div class="cards" id="dashCards"></div>
+    <div class="panel">
+      <h2>⚠️ Khoản vay cần chú ý (đến hạn / quá hạn)</h2>
+      <div id="dashAlerts"></div>
+    </div>
+    <div class="panel">
+      <h2>Tất cả khoản vay đang hoạt động</h2>
+      <div id="dashLoans"></div>
+    </div>
+  </div>
+
+  <!-- BORROWERS -->
+  <div class="view" id="view-borrowers">
+    <div class="row">
+      <h2 style="margin:0;">Danh sách người vay</h2>
+      <button class="btn" onclick="openBorrowerModal()">+ Thêm người vay</button>
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Họ tên</th><th>Điện thoại</th><th>Số khoản vay</th><th>Tổng dư nợ</th><th></th></tr></thead>
+        <tbody id="borrowerTableBody"></tbody>
+      </table>
+      <div class="empty" id="borrowerEmpty" style="display:none;">Chưa có người vay nào. Bấm "+ Thêm người vay" để bắt đầu.</div>
+    </div>
+  </div>
+
+  <!-- LOANS LIST -->
+  <div class="view" id="view-loans">
+    <div class="row">
+      <h2 style="margin:0;">Danh sách khoản vay</h2>
+      <button class="btn" onclick="openLoanModal()">+ Tạo khoản vay</button>
+    </div>
+    <div class="panel">
+      <table>
+        <thead><tr><th>Người vay</th><th>Gốc</th><th>Loại lãi</th><th>Ngày vay</th><th>Trạng thái</th><th></th></tr></thead>
+        <tbody id="loanTableBody"></tbody>
+      </table>
+      <div class="empty" id="loanEmpty" style="display:none;">Chưa có khoản vay nào.</div>
+    </div>
+  </div>
+
+  <!-- LOAN DETAIL -->
+  <div class="view" id="view-loan-detail">
+    <button class="btn secondary small" onclick="showTab('loans')">← Quay lại danh sách</button>
+    <div id="loanDetailContent"></div>
+  </div>
+</main>
+
+<footer>Đây là app đã cài (PWA) — dữ liệu lưu riêng cho app này trên điện thoại, không bị ảnh hưởng khi có bản cập nhật mới. Vẫn nên thường xuyên bấm "Xuất dữ liệu" để backup phòng trường hợp đổi điện thoại.</footer>
+
+<!-- BORROWER MODAL -->
+<div class="modal-overlay" id="borrowerModal">
+  <div class="modal">
+    <h3 id="borrowerModalTitle">Thêm người vay</h3>
+    <input type="hidden" id="borrowerId">
+    <div class="field"><label>Họ tên *</label><input id="borrowerName" placeholder="Nguyễn Văn A"></div>
+    <div class="field"><label>Số điện thoại</label><input id="borrowerPhone" placeholder="09xxxxxxxx"></div>
+    <div class="field"><label>Địa chỉ</label><input id="borrowerAddress" placeholder="Địa chỉ liên hệ"></div>
+    <div class="field"><label>Ghi chú</label><textarea id="borrowerNotes" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('borrowerModal')">Hủy</button>
+      <button class="btn" onclick="saveBorrower()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOAN MODAL -->
+<div class="modal-overlay" id="loanModal">
+  <div class="modal">
+    <h3 id="loanModalTitle">Tạo khoản vay mới</h3>
+    <input type="hidden" id="loanId">
+    <div class="field">
+      <label>Người vay *</label>
+      <select id="loanBorrowerId"></select>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Số tiền gốc (VNĐ) *</label><input type="text" inputmode="numeric" id="loanPrincipal" placeholder="100.000.000" oninput="formatThousandsInput(this)"></div>
+      <div class="field"><label>Ngày vay *</label><input type="date" id="loanStartDate"></div>
+    </div>
+    <div class="field">
+      <label>Loại lãi *</label>
+      <select id="loanInterestType" onchange="onInterestTypeChange()">
+        <option value="monthly_simple">Lãi đơn theo tháng (%/tháng)</option>
+        <option value="daily_simple">Lãi đơn theo ngày (%/ngày)</option>
+        <option value="installment">Lãi trả góp – dư nợ giảm dần</option>
+        <option value="compound_unpaid">Lãi gộp (lãi chưa trả nhập gốc)</option>
+        <option value="compound">Lãi kép</option>
+      </select>
+    </div>
+    <div class="field" id="compoundUnitField" style="display:none;">
+      <label>Đơn vị kỳ lãi kép *</label>
+      <select id="loanCompoundUnit" onchange="onInterestTypeChange()">
+        <option value="month">Theo tháng (%/tháng)</option>
+        <option value="day">Theo ngày (%/ngày)</option>
+      </select>
+    </div>
+    <div class="grid2">
+      <div class="field"><label id="loanRateLabel">Lãi suất (%/tháng) *</label><input type="number" step="0.01" id="loanRate" placeholder="3"></div>
+      <div class="field" id="loanTermField" style="display:none;"><label>Số kỳ trả góp (tháng) *</label><input type="number" id="loanTerm" placeholder="12"></div>
+    </div>
+    <div class="field">
+      <label>Ngày đến hạn (kỳ hạn) — không bắt buộc</label>
+      <input type="date" id="loanTermEndDate">
+      <small>Dùng để xem trước lịch trình lãi đến ngày đáo hạn (áp dụng cho lãi kép).</small>
+    </div>
+    <div class="helptext" id="loanTypeHelp"></div>
+    <div class="field"><label>Ghi chú</label><textarea id="loanNotes" rows="2"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('loanModal')">Hủy</button>
+      <button class="btn" onclick="saveLoan()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal">
+    <h3>Ghi nhận thanh toán</h3>
+    <input type="hidden" id="paymentLoanId">
+    <div class="field"><label>Ngày thanh toán *</label><input type="date" id="paymentDate"></div>
+    <div class="grid2">
+      <div class="field"><label>Tiền lãi trả (VNĐ)</label><input type="number" id="paymentInterest" value="0"></div>
+      <div class="field"><label>Tiền gốc trả (VNĐ)</label><input type="number" id="paymentPrincipal" value="0"></div>
+    </div>
+    <div class="field"><label>Ghi chú</label><input id="paymentNote" placeholder="VD: Trả lãi tháng 6"></div>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('paymentModal')">Hủy</button>
+      <button class="btn" onclick="savePayment()">Lưu thanh toán</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:380px;">
+    <h3 id="confirmTitle">Xác nhận</h3>
+    <p id="confirmText"></p>
+    <div class="modal-actions">
+      <button class="btn secondary" onclick="closeModal('confirmModal')">Hủy</button>
+      <button class="btn danger" id="confirmBtn">Xóa</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===================== STORAGE ===================== */
+const STORAGE_KEY = 'lending_app_data_v1';
+let DB = loadDB();
+
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ console.error('Load error', e); }
+  return { borrowers: [], loans: [], payments: [] };
+}
+function saveDB(){
+  // localStorage luôn được ghi như một lớp an toàn dự phòng, dù đã liên kết file riêng hay chưa.
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(DB));
+  if(linkedFileHandle){
+    writeLinkedFile().catch(err=>{
+      console.error('Không ghi được vào file đã liên kết', err);
+      setStorageBar('mode-needsperm', '⚠️ Không ghi được vào file đã liên kết (file có thể đã bị xóa/di chuyển). Dữ liệu vẫn được lưu tạm trong trình duyệt.', [
+        {label:'Liên kết lại file khác', fn:'pickNewDataFile'}
+      ]);
+    });
+  }
+}
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+/* ===================== LIÊN KẾT FILE DỮ LIỆU RIÊNG (File System Access API) =====================
+   Trên điện thoại (PWA), tính năng này thường không được hỗ trợ — app sẽ tự dùng localStorage,
+   vốn đã đủ an toàn vì PWA có "khu lưu trữ riêng" theo địa chỉ web cố định, không phụ thuộc file.
+   Tính năng này vẫn hữu ích nếu mở app bằng Chrome/Edge trên máy tính.
+*/
+const FS_API_SUPPORTED = typeof window.showSaveFilePicker === 'function';
+let linkedFileHandle = null;
+
+function idbOpen(){
+  return new Promise((resolve, reject)=>{
+    const req = indexedDB.open('lending_app_meta', 1);
+    req.onupgradeneeded = ()=> req.result.createObjectStore('handles');
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbSet(key, value){
+  const db = await idbOpen();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction('handles', 'readwrite');
+    tx.objectStore('handles').put(value, key);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+async function idbGet(key){
+  const db = await idbOpen();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction('handles', 'readonly');
+    const req = tx.objectStore('handles').get(key);
+    req.onsuccess = ()=> resolve(req.result);
+    req.onerror = ()=> reject(req.error);
+  });
+}
+async function idbDelete(key){
+  const db = await idbOpen();
+  return new Promise((resolve, reject)=>{
+    const tx = db.transaction('handles', 'readwrite');
+    tx.objectStore('handles').delete(key);
+    tx.oncomplete = ()=> resolve();
+    tx.onerror = ()=> reject(tx.error);
+  });
+}
+
+function setStorageBar(modeClass, text, actions){
+  const bar = document.getElementById('storageBar');
+  bar.className = modeClass;
+  document.getElementById('storageStatusText').textContent = text;
+  const btnWrap = document.getElementById('storageActionsBtns');
+  btnWrap.innerHTML = '';
+  (actions||[]).forEach(a=>{
+    const b = document.createElement('button');
+    b.textContent = a.label;
+    b.onclick = ()=> window[a.fn](a.arg);
+    btnWrap.appendChild(b);
+  });
+}
+
+async function writeLinkedFile(){
+  const writable = await linkedFileHandle.createWritable();
+  await writable.write(JSON.stringify(DB, null, 2));
+  await writable.close();
+}
+async function loadFromLinkedFile(){
+  const file = await linkedFileHandle.getFile();
+  const text = await file.text();
+  if(text.trim()){
+    const parsed = JSON.parse(text);
+    if(parsed && parsed.borrowers && parsed.loans && parsed.payments){
+      DB = parsed;
+    }
+  } else {
+    // File rỗng (mới tạo) -> ghi dữ liệu hiện có vào đó để khởi tạo
+    await writeLinkedFile();
+  }
+}
+function describeHandle(handle){
+  return handle && handle.name ? handle.name : 'file dữ liệu';
+}
+
+async function pickNewDataFile(){
+  if(!FS_API_SUPPORTED){ alert('Trình duyệt/thiết bị này không hỗ trợ liên kết file trực tiếp. App vẫn tự lưu an toàn trong bộ nhớ riêng của app này (PWA đã cài).'); return; }
+  try{
+    const handle = await window.showSaveFilePicker({
+      suggestedName: 'du-lieu-cho-vay.json',
+      types: [{ description: 'JSON', accept: {'application/json': ['.json']} }]
+    });
+    const file = await handle.getFile();
+    const text = await file.text();
+    if(text.trim()){
+      showConfirm('Liên kết file dữ liệu', `File "${describeHandle(handle)}" đã có dữ liệu sẵn. Bạn muốn dùng dữ liệu trong file này (thay thế dữ liệu hiện tại trên màn hình), hay ghi đè bằng dữ liệu hiện tại đang xem?`, async ()=>{
+        linkedFileHandle = handle;
+        await idbSet('fileHandle', handle);
+        await loadFromLinkedFile();
+        closeModal('confirmModal');
+        updateStorageStatusUI();
+        showTab('dashboard');
+      });
+    } else {
+      linkedFileHandle = handle;
+      await idbSet('fileHandle', handle);
+      await writeLinkedFile();
+      updateStorageStatusUI();
+    }
+  }catch(err){
+    if(err.name !== 'AbortError') alert('Không thể liên kết file: ' + err.message);
+  }
+}
+async function pickExistingDataFile(){
+  if(!FS_API_SUPPORTED){ alert('Trình duyệt/thiết bị này không hỗ trợ liên kết file trực tiếp. App vẫn tự lưu an toàn trong bộ nhớ riêng của app này (PWA đã cài).'); return; }
+  try{
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'JSON', accept: {'application/json': ['.json']} }]
+    });
+    const perm = await handle.requestPermission({mode:'readwrite'});
+    if(perm !== 'granted'){ alert('Cần cấp quyền đọc/ghi cho file này để liên kết.'); return; }
+    showConfirm('Liên kết file dữ liệu', `Dữ liệu hiện tại trên màn hình sẽ được thay bằng dữ liệu trong file "${describeHandle(handle)}". Tiếp tục?`, async ()=>{
+      linkedFileHandle = handle;
+      await idbSet('fileHandle', handle);
+      await loadFromLinkedFile();
+      closeModal('confirmModal');
+      updateStorageStatusUI();
+      showTab('dashboard');
+    });
+  }catch(err){
+    if(err.name !== 'AbortError') alert('Không thể mở file: ' + err.message);
+  }
+}
+async function reconnectFile(){
+  const handle = await idbGet('fileHandle');
+  if(!handle) return;
+  try{
+    const perm = await handle.requestPermission({mode:'readwrite'});
+    if(perm === 'granted'){
+      linkedFileHandle = handle;
+      await loadFromLinkedFile();
+      updateStorageStatusUI();
+      showTab('dashboard');
+    } else {
+      setStorageBar('mode-needsperm', '⚠️ Trình duyệt chưa được cấp quyền truy cập file đã liên kết.', [
+        {label:'Cấp lại quyền', fn:'reconnectFile'},
+        {label:'Liên kết file khác', fn:'pickNewDataFile'}
+      ]);
+    }
+  }catch(err){
+    alert('Không thể cấp lại quyền: ' + err.message);
+  }
+}
+async function disconnectFile(){
+  showConfirm('Bỏ liên kết file', 'App sẽ ngừng lưu vào file đã liên kết và chuyển về lưu trong bộ nhớ riêng của app. Dữ liệu hiện tại vẫn được giữ. Tiếp tục?', async ()=>{
+    linkedFileHandle = null;
+    await idbDelete('fileHandle');
+    saveDB();
+    closeModal('confirmModal');
+    updateStorageStatusUI();
+  });
+}
+
+function updateStorageStatusUI(){
+  if(linkedFileHandle){
+    setStorageBar('mode-linked', `✅ Đang lưu vào file riêng: "${describeHandle(linkedFileHandle)}".`, [
+      {label:'Đổi file khác', fn:'pickNewDataFile'},
+      {label:'Bỏ liên kết', fn:'disconnectFile'}
+    ]);
+  } else if(!FS_API_SUPPORTED){
+    setStorageBar('mode-linked', '✅ App đã cài — dữ liệu tự lưu riêng cho app này, không bị mất khi có bản cập nhật mới.', []);
+  } else {
+    setStorageBar('mode-local', 'Đang lưu trong bộ nhớ riêng của app (đủ an toàn cho app đã cài). Có thể liên kết thêm file riêng nếu muốn.', [
+      {label:'Tạo file dữ liệu mới', fn:'pickNewDataFile'},
+      {label:'Dùng file đã có', fn:'pickExistingDataFile'}
+    ]);
+  }
+}
+
+async function initStorage(){
+  if(!FS_API_SUPPORTED){ updateStorageStatusUI(); return; }
+  try{
+    const handle = await idbGet('fileHandle');
+    if(!handle){ updateStorageStatusUI(); return; }
+    const perm = await handle.queryPermission({mode:'readwrite'});
+    if(perm === 'granted'){
+      linkedFileHandle = handle;
+      await loadFromLinkedFile();
+      updateStorageStatusUI();
+      renderDashboard();
+    } else {
+      setStorageBar('mode-needsperm', `⚠️ Đã liên kết file "${describeHandle(handle)}" trước đây, nhưng cần cấp lại quyền truy cập.`, [
+        {label:'Cấp lại quyền', fn:'reconnectFile'},
+        {label:'Liên kết file khác', fn:'pickNewDataFile'}
+      ]);
+    }
+  }catch(err){
+    console.warn('Không thể khôi phục file liên kết', err);
+    updateStorageStatusUI();
+  }
+}
+
+/* ===================== DATE HELPERS ===================== */
+function parseDate(s){ // 'YYYY-MM-DD' -> Date at UTC midnight to avoid TZ drift
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(Date.UTC(y, m-1, d));
+}
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function daysBetween(d1, d2){ // d1,d2 = date strings, returns d2-d1 in days
+  return Math.round((parseDate(d2) - parseDate(d1)) / 86400000);
+}
+function monthsBetween(d1, d2){ // fractional months using 30-day convention (common in VN lending)
+  return daysBetween(d1, d2) / 30;
+}
+function addMonths(dateStr, n){
+  // Adds n calendar months, clamping to the last valid day of the target month
+  // (e.g. 31/1 + 1 tháng -> 28 hoặc 29/2, không bị trôi sang tháng 3).
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const target = new Date(Date.UTC(y, m-1+n, 1));
+  const lastDay = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth()+1, 0)).getUTCDate();
+  target.setUTCDate(Math.min(d, lastDay));
+  return target.toISOString().slice(0,10);
+}
+function periodsElapsed(startDate, asOf){
+  let k = 0;
+  let safety = 0;
+  while(addMonths(startDate, k) <= asOf && safety < 1200){ k++; safety++; }
+  return Math.max(1, k);
+}
+function addDays(dateStr, n){
+  const d = parseDate(dateStr);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0,10);
+}
+function fullPeriodsCompleted(startDate, asOf, unit){
+  if(unit === 'day') return Math.max(0, daysBetween(startDate, asOf));
+  return Math.max(0, periodsElapsed(startDate, asOf) - 1);
+}
+function generateCompoundSchedule(loan, endDateOverride){
+  const unit = loan.compoundUnit || 'month';
+  const endDate = endDateOverride || loan.termEndDate || todayStr();
+  const periods = fullPeriodsCompleted(loan.startDate, endDate, unit);
+  const rows = [];
+  let balance = loan.principal;
+  for(let i=1;i<=periods;i++){
+    const periodStart = unit==='day' ? addDays(loan.startDate, i-1) : addMonths(loan.startDate, i-1);
+    const periodEnd = unit==='day' ? addDays(loan.startDate, i) : addMonths(loan.startDate, i);
+    const interest = balance * (loan.rate/100);
+    const closing = balance + interest;
+    rows.push({ i, periodStart, periodEnd, opening: balance, interest, closing });
+    balance = closing;
+  }
+  return rows;
+}
+function fmtDate(s){
+  if(!s) return '';
+  const [y,m,d] = s.split('-');
+  return `${d}/${m}/${y}`;
+}
+function fmtMoney(n){
+  n = Math.round(n || 0);
+  return n.toLocaleString('vi-VN') + ' đ';
+}
+function formatThousandsInput(el){
+  const cursorFromEnd = el.value.length - el.selectionStart;
+  const digits = el.value.replace(/\D/g, '');
+  const formatted = digits === '' ? '' : Number(digits).toLocaleString('vi-VN');
+  el.value = formatted;
+  const pos = Math.max(0, formatted.length - cursorFromEnd);
+  el.setSelectionRange(pos, pos);
+}
+function parseFormattedNumber(str){
+  if(!str) return NaN;
+  const digits = String(str).replace(/\D/g, '');
+  return digits === '' ? NaN : Number(digits);
+}
+
+/* ===================== INTEREST ENGINE ===================== */
+function getLoanPayments(loanId){
+  return DB.payments.filter(p => p.loanId === loanId).sort((a,b)=> a.date < b.date ? -1 : 1);
+}
+
+function computeLoanState(loan, asOf){
+  asOf = asOf || todayStr();
+  const payments = getLoanPayments(loan.id);
+  const totalPrincipalPaid = payments.reduce((s,p)=> s + (p.principalPaid||0), 0);
+  const totalInterestPaid = payments.reduce((s,p)=> s + (p.interestPaid||0), 0);
+  const outstandingPrincipal = Math.max(0, loan.principal - totalPrincipalPaid);
+
+  let accruedInterest = 0;
+  let scheduleNote = '';
+
+  if(loan.interestType === 'monthly_simple'){
+    const k = periodsElapsed(loan.startDate, asOf);
+    const principalEvents = payments.filter(p => p.principalPaid > 0).map(p => ({date: p.date, amount: p.principalPaid})).sort((a,b)=> a.date<b.date?-1:1);
+    for(let i=1; i<=k; i++){
+      const periodStart = addMonths(loan.startDate, i-1);
+      const paidBeforePeriod = principalEvents.filter(ev => ev.date < periodStart).reduce((s,e)=> s+e.amount, 0);
+      const balance = Math.max(0, loan.principal - paidBeforePeriod);
+      accruedInterest += balance * (loan.rate/100);
+    }
+    scheduleNote = `Lãi đơn ${loan.rate}%/tháng: mỗi kỳ tính nguyên 1 tháng lãi ngay khi kỳ bắt đầu (kỳ tính theo ngày vay hàng tháng), không chia nhỏ theo ngày.`;
+  }
+  else if(loan.interestType === 'daily_simple'){
+    const principalEvents = payments.filter(p => p.principalPaid > 0).map(p => ({date: p.date, amount: p.principalPaid}));
+    let balance = loan.principal;
+    let cursor = loan.startDate;
+    for(const ev of principalEvents){
+      if(ev.date > asOf) break;
+      accruedInterest += balance * (loan.rate/100) * daysBetween(cursor, ev.date);
+      balance -= ev.amount;
+      cursor = ev.date;
+    }
+    const finalSpan = daysBetween(cursor, asOf);
+    if(finalSpan > 0) accruedInterest += balance * (loan.rate/100) * finalSpan;
+    scheduleNote = `Lãi đơn ${loan.rate}%/ngày, tính theo số ngày thực tế.`;
+  }
+  else if(loan.interestType === 'compound'){
+    const unit = loan.compoundUnit || 'month';
+    const n = fullPeriodsCompleted(loan.startDate, asOf, unit);
+    const amount = loan.principal * Math.pow(1 + loan.rate/100, n);
+    accruedInterest = amount - loan.principal;
+    scheduleNote = unit === 'day'
+      ? `Lãi kép ${loan.rate}%/ngày, kép theo số ngày tròn đã qua.`
+      : `Lãi kép ${loan.rate}%/tháng, kép theo số kỳ tháng tròn đã qua (tính theo mốc ngày vay).`;
+  }
+  else if(loan.interestType === 'compound_unpaid'){
+    const k = periodsElapsed(loan.startDate, asOf);
+    let principal = loan.principal;
+    let totalAccrued = 0;
+    let interestPaidPool = totalInterestPaid;
+    for(let i=1; i<=k; i++){
+      const periodStart = addMonths(loan.startDate, i-1);
+      const periodEnd = addMonths(loan.startDate, i);
+      const interestThisPeriod = principal * (loan.rate/100);
+      totalAccrued += interestThisPeriod;
+      const periodPrincipalPaid = payments
+        .filter(p => p.date >= periodStart && p.date < periodEnd && p.principalPaid > 0)
+        .reduce((s,p)=> s + p.principalPaid, 0);
+      let unpaidThisPeriod = interestThisPeriod;
+      if(interestPaidPool > 0){
+        const used = Math.min(interestPaidPool, unpaidThisPeriod);
+        unpaidThisPeriod -= used;
+        interestPaidPool -= used;
+      }
+      if(periodEnd <= asOf){
+        principal = Math.max(0, principal - periodPrincipalPaid + unpaidThisPeriod);
+      } else {
+        principal = Math.max(0, principal - periodPrincipalPaid);
+      }
+    }
+    accruedInterest = totalAccrued;
+    scheduleNote = `Lãi gộp ${loan.rate}%/tháng: mỗi kỳ tính nguyên 1 tháng lãi; nếu hết kỳ chưa thu đủ, phần thiếu nhập vào gốc cho kỳ kế tiếp.`;
+  }
+  else if(loan.interestType === 'installment'){
+    const term = loan.term || 1;
+    const monthlyPrincipal = loan.principal / term;
+    const k = Math.min(term, periodsElapsed(loan.startDate, asOf));
+    let balance = loan.principal;
+    let totalAccrued = 0;
+    for(let i=1; i<=k; i++){
+      totalAccrued += balance * (loan.rate/100);
+      const periodEnd = addMonths(loan.startDate, i);
+      if(periodEnd <= asOf) balance = Math.max(0, balance - monthlyPrincipal);
+    }
+    accruedInterest = totalAccrued;
+    scheduleNote = `Trả góp ${term} kỳ, mỗi kỳ trả gốc cố định ${fmtMoney(monthlyPrincipal)} + nguyên 1 tháng lãi trên dư nợ còn lại tại thời điểm kỳ đó bắt đầu.`;
+  }
+
+  const outstandingInterest = Math.max(0, accruedInterest - totalInterestPaid);
+  const isClosed = outstandingPrincipal <= 0 && outstandingInterest < 1 && (loan.status === 'closed' || totalPrincipalPaid >= loan.principal);
+
+  return {
+    outstandingPrincipal,
+    outstandingInterest,
+    accruedInterest,
+    totalInterestPaid,
+    totalPrincipalPaid,
+    scheduleNote,
+    isClosed
+  };
+}
+
+function loanOverdueStatus(loan, state){
+  if(state.isClosed) return {label:'Đã thanh lý', cls:'muted'};
+  if(state.outstandingInterest > 1000) return {label:'Còn lãi chưa trả', cls:'warn'};
+  if(state.outstandingPrincipal > 0) return {label:'Đang vay', cls:'ok'};
+  return {label:'Đang vay', cls:'ok'};
+}
+
+/* ===================== NAVIGATION ===================== */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=> showTab(btn.dataset.tab));
+});
+function showTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.toggle('active', b.dataset.tab===tab));
+  document.querySelectorAll('.view').forEach(v=> v.classList.remove('active'));
+  document.getElementById('view-'+tab).classList.add('active');
+  if(tab==='dashboard') renderDashboard();
+  if(tab==='borrowers') renderBorrowers();
+  if(tab==='loans') renderLoans();
+}
+
+/* ===================== MODALS ===================== */
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+
+/* ===================== BORROWERS ===================== */
+function openBorrowerModal(id){
+  document.getElementById('borrowerModalTitle').textContent = id ? 'Sửa người vay' : 'Thêm người vay';
+  document.getElementById('borrowerId').value = id || '';
+  if(id){
+    const b = DB.borrowers.find(x=>x.id===id);
+    document.getElementById('borrowerName').value = b.name;
+    document.getElementById('borrowerPhone').value = b.phone || '';
+    document.getElementById('borrowerAddress').value = b.address || '';
+    document.getElementById('borrowerNotes').value = b.notes || '';
+  } else {
+    ['borrowerName','borrowerPhone','borrowerAddress','borrowerNotes'].forEach(f=> document.getElementById(f).value='');
+  }
+  openModal('borrowerModal');
+}
+function saveBorrower(){
+  const name = document.getElementById('borrowerName').value.trim();
+  if(!name){ alert('Vui lòng nhập họ tên.'); return; }
+  const id = document.getElementById('borrowerId').value;
+  const data = {
+    name,
+    phone: document.getElementById('borrowerPhone').value.trim(),
+    address: document.getElementById('borrowerAddress').value.trim(),
+    notes: document.getElementById('borrowerNotes').value.trim()
+  };
+  if(id){
+    const b = DB.borrowers.find(x=>x.id===id);
+    Object.assign(b, data);
+  } else {
+    DB.borrowers.push({ id: uid(), createdAt: todayStr(), ...data });
+  }
+  saveDB();
+  closeModal('borrowerModal');
+  renderBorrowers();
+  renderDashboard();
+}
+function deleteBorrower(id){
+  const hasLoans = DB.loans.some(l=>l.borrowerId===id);
+  if(hasLoans){ alert('Không thể xóa: người vay này đang có khoản vay. Hãy xóa các khoản vay trước.'); return; }
+  showConfirm('Xóa người vay', 'Bạn chắc chắn muốn xóa người vay này?', ()=>{
+    DB.borrowers = DB.borrowers.filter(x=>x.id!==id);
+    saveDB();
+    renderBorrowers();
+    closeModal('confirmModal');
+  });
+}
+function renderBorrowers(){
+  const tbody = document.getElementById('borrowerTableBody');
+  const empty = document.getElementById('borrowerEmpty');
+  tbody.innerHTML = '';
+  if(DB.borrowers.length===0){ empty.style.display='block'; return; }
+  empty.style.display='none';
+  DB.borrowers.forEach(b=>{
+    const loans = DB.loans.filter(l=>l.borrowerId===b.id);
+    const totalDebt = loans.reduce((s,l)=>{
+      const st = computeLoanState(l);
+      return s + st.outstandingPrincipal + st.outstandingInterest;
+    },0);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${escapeHtml(b.name)}</strong>${b.address ? `<br><span style="color:var(--muted);font-size:12px;">${escapeHtml(b.address)}</span>`:''}</td>
+      <td>${escapeHtml(b.phone||'-')}</td>
+      <td>${loans.length}</td>
+      <td>${fmtMoney(totalDebt)}</td>
+      <td>
+        <button class="btn secondary small" onclick="openBorrowerModal('${b.id}')">Sửa</button>
+        <button class="btn danger small" onclick="deleteBorrower('${b.id}')">Xóa</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ===================== LOANS ===================== */
+function refreshBorrowerSelect(){
+  const sel = document.getElementById('loanBorrowerId');
+  sel.innerHTML = DB.borrowers.map(b=>`<option value="${b.id}">${escapeHtml(b.name)}</option>`).join('') || '<option value="">(Chưa có người vay)</option>';
+}
+function onInterestTypeChange(){
+  const type = document.getElementById('loanInterestType').value;
+  const rateLabel = document.getElementById('loanRateLabel');
+  const termField = document.getElementById('loanTermField');
+  const compoundUnitField = document.getElementById('compoundUnitField');
+  const compoundUnit = document.getElementById('loanCompoundUnit').value;
+  const help = document.getElementById('loanTypeHelp');
+  const helps = {
+    monthly_simple: 'Lãi đơn theo tháng: mỗi kỳ tính nguyên 1 tháng lãi trên gốc còn lại, không chia nhỏ theo ngày, không cộng dồn vào gốc.',
+    daily_simple: 'Lãi đơn theo ngày: lãi suất %/ngày tính trên số gốc còn lại theo số ngày vay thực tế.',
+    installment: 'Lãi trả góp: chia gốc thành các kỳ bằng nhau, lãi tính trên dư nợ còn lại mỗi kỳ.',
+    compound_unpaid: 'Lãi gộp: nếu hết kỳ chưa trả đủ lãi tháng đó, phần còn thiếu sẽ tự cộng vào gốc cho kỳ sau.',
+    compound: compoundUnit === 'day'
+      ? 'Lãi kép theo ngày: lãi suất %/ngày, kép vào gốc mỗi ngày tròn theo công thức P×(1+r)^n.'
+      : 'Lãi kép theo tháng: lãi suất %/tháng, kép vào gốc mỗi kỳ tháng tròn theo công thức P×(1+r)^n.'
+  };
+  help.textContent = helps[type];
+  compoundUnitField.style.display = (type==='compound') ? 'block' : 'none';
+  if(type==='daily_simple'){ rateLabel.textContent = 'Lãi suất (%/ngày) *'; }
+  else if(type==='compound'){ rateLabel.textContent = compoundUnit==='day' ? 'Lãi suất (%/ngày) *' : 'Lãi suất (%/tháng) *'; }
+  else { rateLabel.textContent = 'Lãi suất (%/tháng) *'; }
+  termField.style.display = (type==='installment') ? 'block' : 'none';
+}
+function openLoanModal(id){
+  refreshBorrowerSelect();
+  document.getElementById('loanModalTitle').textContent = id ? 'Sửa khoản vay' : 'Tạo khoản vay mới';
+  document.getElementById('loanId').value = id || '';
+  if(id){
+    const l = DB.loans.find(x=>x.id===id);
+    document.getElementById('loanBorrowerId').value = l.borrowerId;
+    document.getElementById('loanPrincipal').value = l.principal.toLocaleString('vi-VN');
+    document.getElementById('loanStartDate').value = l.startDate;
+    document.getElementById('loanInterestType').value = l.interestType;
+    document.getElementById('loanCompoundUnit').value = l.compoundUnit || 'month';
+    document.getElementById('loanRate').value = l.rate;
+    document.getElementById('loanTerm').value = l.term || '';
+    document.getElementById('loanTermEndDate').value = l.termEndDate || '';
+    document.getElementById('loanNotes').value = l.notes || '';
+  } else {
+    document.getElementById('loanPrincipal').value = '';
+    document.getElementById('loanStartDate').value = todayStr();
+    document.getElementById('loanInterestType').value = 'monthly_simple';
+    document.getElementById('loanCompoundUnit').value = 'month';
+    document.getElementById('loanRate').value = '';
+    document.getElementById('loanTerm').value = '';
+    document.getElementById('loanTermEndDate').value = '';
+    document.getElementById('loanNotes').value = '';
+  }
+  onInterestTypeChange();
+  openModal('loanModal');
+}
+function saveLoan(){
+  const borrowerId = document.getElementById('loanBorrowerId').value;
+  const principal = parseFormattedNumber(document.getElementById('loanPrincipal').value);
+  const startDate = document.getElementById('loanStartDate').value;
+  const interestType = document.getElementById('loanInterestType').value;
+  const compoundUnit = document.getElementById('loanCompoundUnit').value;
+  const rate = parseFloat(document.getElementById('loanRate').value);
+  const term = parseInt(document.getElementById('loanTerm').value) || null;
+  const termEndDate = document.getElementById('loanTermEndDate').value || null;
+  const notes = document.getElementById('loanNotes').value.trim();
+
+  if(!borrowerId){ alert('Vui lòng chọn hoặc thêm người vay trước.'); return; }
+  if(!principal || principal<=0){ alert('Vui lòng nhập số tiền gốc hợp lệ.'); return; }
+  if(!startDate){ alert('Vui lòng chọn ngày vay.'); return; }
+  if(isNaN(rate) || rate<0){ alert('Vui lòng nhập lãi suất hợp lệ.'); return; }
+  if(interestType==='installment' && (!term || term<=0)){ alert('Vui lòng nhập số kỳ trả góp.'); return; }
+  if(termEndDate && termEndDate <= startDate){ alert('Ngày đến hạn phải sau ngày vay.'); return; }
+
+  const id = document.getElementById('loanId').value;
+  const data = { borrowerId, principal, startDate, interestType, compoundUnit, rate, term, termEndDate, notes };
+  if(id){
+    const l = DB.loans.find(x=>x.id===id);
+    Object.assign(l, data);
+  } else {
+    DB.loans.push({ id: uid(), status:'active', createdAt: todayStr(), ...data });
+  }
+  saveDB();
+  closeModal('loanModal');
+  renderLoans();
+  renderDashboard();
+}
+function deleteLoan(id){
+  showConfirm('Xóa khoản vay', 'Bạn chắc chắn muốn xóa khoản vay này? Toàn bộ lịch sử thanh toán liên quan cũng sẽ bị xóa.', ()=>{
+    DB.loans = DB.loans.filter(x=>x.id!==id);
+    DB.payments = DB.payments.filter(p=>p.loanId!==id);
+    saveDB();
+    renderLoans();
+    closeModal('confirmModal');
+    showTab('loans');
+  });
+}
+function closeLoan(id){
+  const l = DB.loans.find(x=>x.id===id);
+  l.status = 'closed';
+  saveDB();
+  viewLoanDetail(id);
+  renderDashboard();
+}
+function reopenLoan(id){
+  const l = DB.loans.find(x=>x.id===id);
+  l.status = 'active';
+  saveDB();
+  viewLoanDetail(id);
+  renderDashboard();
+}
+
+const interestTypeLabels = {
+  monthly_simple: 'Lãi đơn / tháng',
+  daily_simple: 'Lãi đơn / ngày',
+  installment: 'Trả góp',
+  compound_unpaid: 'Lãi gộp',
+  compound: 'Lãi kép'
+};
+
+function renderLoans(){
+  const tbody = document.getElementById('loanTableBody');
+  const empty = document.getElementById('loanEmpty');
+  tbody.innerHTML = '';
+  if(DB.loans.length===0){ empty.style.display='block'; return; }
+  empty.style.display='none';
+  DB.loans.slice().sort((a,b)=> b.startDate < a.startDate ? -1:1).forEach(l=>{
+    const borrower = DB.borrowers.find(b=>b.id===l.borrowerId);
+    const state = computeLoanState(l);
+    const status = state.isClosed ? {label:'Đã thanh lý', cls:'muted'} : (state.outstandingInterest>1000 ? {label:'Còn lãi chưa trả', cls:'warn'} : {label:'Đang vay', cls:'ok'});
+    const tr = document.createElement('tr');
+    tr.style.cursor='pointer';
+    tr.innerHTML = `
+      <td>${escapeHtml(borrower ? borrower.name : '(đã xóa)')}</td>
+      <td>${fmtMoney(l.principal)}</td>
+      <td>${interestTypeLabels[l.interestType]} (${l.rate}%)</td>
+      <td>${fmtDate(l.startDate)}</td>
+      <td><span class="badge ${status.cls}">${status.label}</span></td>
+      <td><button class="btn secondary small" onclick="event.stopPropagation();viewLoanDetail('${l.id}')">Xem</button></td>`;
+    tr.addEventListener('click', ()=> viewLoanDetail(l.id));
+    tbody.appendChild(tr);
+  });
+}
+
+function renderCompoundScheduleHtml(loan){
+  const unit = loan.compoundUnit || 'month';
+  const unitLabel = unit === 'day' ? 'ngày' : 'tháng';
+  const hasTermEnd = !!loan.termEndDate;
+  const rows = generateCompoundSchedule(loan);
+  if(rows.length === 0){
+    return `<div class="panel">
+      <h2>Lịch trình lãi kép dự kiến</h2>
+      <div class="empty">${hasTermEnd ? 'Chưa đủ 1 kỳ '+unitLabel+' để tính lãi kép trong khoảng thời gian này.' : 'Hãy nhập "Ngày đến hạn (kỳ hạn)" ở khoản vay để xem trước lịch trình lãi kép đến ngày đáo hạn.'}</div>
+    </div>`;
+  }
+  return `<div class="panel">
+    <div class="row">
+      <h2 style="margin:0;">Lịch trình lãi kép dự kiến${hasTermEnd ? ' đến ngày '+fmtDate(loan.termEndDate) : ' (tạm tính đến hôm nay — nhập ngày đến hạn để xem trọn kỳ hạn)'}</h2>
+    </div>
+    <div class="helptext">Bảng này tính theo hợp đồng (gốc, lãi suất, ngày vay) — KHÔNG trừ các khoản đã thanh toán thực tế. Dùng để xem trước số tiền sẽ phải trả nếu không thanh toán gì cho đến từng kỳ ${unitLabel}.</div>
+    <table>
+      <thead><tr><th>Kỳ</th><th>Từ ngày</th><th>Đến ngày</th><th>Dư nợ đầu kỳ</th><th>Lãi kỳ này</th><th>Tổng nợ cuối kỳ</th></tr></thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr>
+            <td>${unit==='day' ? 'Ngày '+r.i : 'Tháng '+r.i}</td>
+            <td>${fmtDate(r.periodStart)}</td>
+            <td>${fmtDate(r.periodEnd)}</td>
+            <td>${fmtMoney(r.opening)}</td>
+            <td>${fmtMoney(r.interest)}</td>
+            <td><strong>${fmtMoney(r.closing)}</strong></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+function viewLoanDetail(id){
+  const l = DB.loans.find(x=>x.id===id);
+  if(!l) return;
+  const borrower = DB.borrowers.find(b=>b.id===l.borrowerId);
+  const state = computeLoanState(l);
+  const payments = getLoanPayments(id);
+
+  const html = `
+    <div class="panel">
+      <div class="row">
+        <h2 style="margin:0;">${escapeHtml(borrower ? borrower.name : '(đã xóa)')} — ${fmtMoney(l.principal)}</h2>
+        <div>
+          <button class="btn secondary small" onclick="openLoanModal('${l.id}')">Sửa khoản vay</button>
+          ${state.isClosed
+            ? `<button class="btn secondary small" onclick="reopenLoan('${l.id}')">Mở lại</button>`
+            : `<button class="btn secondary small" onclick="closeLoan('${l.id}')">Đánh dấu đã thanh lý</button>`}
+          <button class="btn danger small" onclick="deleteLoan('${l.id}')">Xóa</button>
+        </div>
+      </div>
+      <div class="cards">
+        <div class="card"><div class="label">Gốc còn lại</div><div class="value">${fmtMoney(state.outstandingPrincipal)}</div></div>
+        <div class="card"><div class="label">Lãi chưa trả</div><div class="value" style="color:${state.outstandingInterest>0?'var(--danger)':'var(--success)'}">${fmtMoney(state.outstandingInterest)}</div></div>
+        <div class="card"><div class="label">Tổng lãi đã trả</div><div class="value">${fmtMoney(state.totalInterestPaid)}</div></div>
+        <div class="card"><div class="label">Ngày vay</div><div class="value" style="font-size:16px;">${fmtDate(l.startDate)}</div></div>
+      </div>
+      <div class="helptext">${state.scheduleNote}${l.termEndDate ? ` Kỳ hạn đến ngày ${fmtDate(l.termEndDate)}.` : ''}</div>
+      ${l.notes ? `<p style="color:var(--muted);font-size:13px;">📝 ${escapeHtml(l.notes)}</p>` : ''}
+    </div>
+
+    ${l.interestType === 'compound' ? renderCompoundScheduleHtml(l) : ''}
+
+    <div class="panel">
+      <div class="row">
+        <h2 style="margin:0;">Lịch sử thanh toán</h2>
+        <button class="btn" onclick="openPaymentModal('${l.id}')">+ Ghi nhận thanh toán</button>
+      </div>
+      <table>
+        <thead><tr><th>Ngày</th><th>Lãi trả</th><th>Gốc trả</th><th>Ghi chú</th><th></th></tr></thead>
+        <tbody>
+          ${payments.length===0 ? '' : payments.map(p=>`
+            <tr>
+              <td>${fmtDate(p.date)}</td>
+              <td>${fmtMoney(p.interestPaid||0)}</td>
+              <td>${fmtMoney(p.principalPaid||0)}</td>
+              <td>${escapeHtml(p.note||'')}</td>
+              <td><button class="btn danger small" onclick="deletePayment('${p.id}','${l.id}')">Xóa</button></td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      ${payments.length===0 ? '<div class="empty">Chưa có thanh toán nào được ghi nhận.</div>' : ''}
+    </div>
+  `;
+  document.getElementById('loanDetailContent').innerHTML = html;
+  document.querySelectorAll('.tab-btn').forEach(b=> b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=> v.classList.remove('active'));
+  document.getElementById('view-loan-detail').classList.add('active');
+}
+
+/* ===================== PAYMENTS ===================== */
+function openPaymentModal(loanId){
+  document.getElementById('paymentLoanId').value = loanId;
+  document.getElementById('paymentDate').value = todayStr();
+  document.getElementById('paymentInterest').value = 0;
+  document.getElementById('paymentPrincipal').value = 0;
+  document.getElementById('paymentNote').value = '';
+  openModal('paymentModal');
+}
+function savePayment(){
+  const loanId = document.getElementById('paymentLoanId').value;
+  const date = document.getElementById('paymentDate').value;
+  const interestPaid = parseFloat(document.getElementById('paymentInterest').value) || 0;
+  const principalPaid = parseFloat(document.getElementById('paymentPrincipal').value) || 0;
+  const note = document.getElementById('paymentNote').value.trim();
+  if(!date){ alert('Vui lòng chọn ngày thanh toán.'); return; }
+  if(interestPaid<=0 && principalPaid<=0){ alert('Vui lòng nhập số tiền lãi hoặc gốc đã trả.'); return; }
+  DB.payments.push({ id: uid(), loanId, date, interestPaid, principalPaid, note });
+  saveDB();
+  closeModal('paymentModal');
+  viewLoanDetail(loanId);
+  renderDashboard();
+}
+function deletePayment(paymentId, loanId){
+  showConfirm('Xóa thanh toán', 'Xóa bản ghi thanh toán này?', ()=>{
+    DB.payments = DB.payments.filter(p=>p.id!==paymentId);
+    saveDB();
+    closeModal('confirmModal');
+    viewLoanDetail(loanId);
+    renderDashboard();
+  });
+}
+
+/* ===================== DASHBOARD ===================== */
+function renderDashboard(){
+  const activeLoans = DB.loans.filter(l=> l.status !== 'closed');
+  let totalOutstandingPrincipal = 0, totalOutstandingInterest = 0, totalInterestCollected = 0;
+  const states = activeLoans.map(l=>({loan:l, state: computeLoanState(l)}));
+  states.forEach(({state})=>{
+    totalOutstandingPrincipal += state.outstandingPrincipal;
+    totalOutstandingInterest += state.outstandingInterest;
+  });
+  DB.payments.forEach(p=> totalInterestCollected += (p.interestPaid||0));
+
+  const overdueCount = states.filter(s=> s.state.outstandingInterest > 1000).length;
+
+  document.getElementById('dashCards').innerHTML = `
+    <div class="card"><div class="label">Tổng dư nợ gốc</div><div class="value">${fmtMoney(totalOutstandingPrincipal)}</div></div>
+    <div class="card"><div class="label">Tổng lãi chưa thu</div><div class="value" style="color:${totalOutstandingInterest>0?'var(--danger)':'var(--success)'}">${fmtMoney(totalOutstandingInterest)}</div></div>
+    <div class="card"><div class="label">Tổng lãi đã thu</div><div class="value" style="color:var(--success)">${fmtMoney(totalInterestCollected)}</div></div>
+    <div class="card"><div class="label">Khoản vay đang hoạt động</div><div class="value">${activeLoans.length}</div></div>
+    <div class="card"><div class="label">Khoản vay còn lãi chưa trả</div><div class="value" style="color:${overdueCount>0?'var(--danger)':'var(--success)'}">${overdueCount}</div></div>
+  `;
+
+  const alertList = states.filter(s=> s.state.outstandingInterest > 1000)
+    .sort((a,b)=> b.state.outstandingInterest - a.state.outstandingInterest);
+  document.getElementById('dashAlerts').innerHTML = alertList.length===0
+    ? '<div class="empty">Không có khoản vay nào còn lãi chưa thanh toán 🎉</div>'
+    : `<table><thead><tr><th>Người vay</th><th>Gốc còn lại</th><th>Lãi chưa trả</th><th></th></tr></thead><tbody>
+        ${alertList.map(({loan,state})=>{
+          const borrower = DB.borrowers.find(b=>b.id===loan.borrowerId);
+          return `<tr style="cursor:pointer" onclick="viewLoanDetail('${loan.id}')">
+            <td>${escapeHtml(borrower?borrower.name:'(đã xóa)')}</td>
+            <td>${fmtMoney(state.outstandingPrincipal)}</td>
+            <td><span class="badge danger">${fmtMoney(state.outstandingInterest)}</span></td>
+            <td><button class="btn secondary small" onclick="event.stopPropagation();viewLoanDetail('${loan.id}')">Xem</button></td>
+          </tr>`;
+        }).join('')}
+      </tbody></table>`;
+
+  document.getElementById('dashLoans').innerHTML = activeLoans.length===0
+    ? '<div class="empty">Chưa có khoản vay đang hoạt động.</div>'
+    : `<table><thead><tr><th>Người vay</th><th>Gốc</th><th>Loại lãi</th><th>Gốc còn lại</th><th>Lãi chưa trả</th></tr></thead><tbody>
+        ${states.map(({loan,state})=>{
+          const borrower = DB.borrowers.find(b=>b.id===loan.borrowerId);
+          return `<tr style="cursor:pointer" onclick="viewLoanDetail('${loan.id}')">
+            <td>${escapeHtml(borrower?borrower.name:'(đã xóa)')}</td>
+            <td>${fmtMoney(loan.principal)}</td>
+            <td>${interestTypeLabels[loan.interestType]}</td>
+            <td>${fmtMoney(state.outstandingPrincipal)}</td>
+            <td>${fmtMoney(state.outstandingInterest)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody></table>`;
+}
+
+/* ===================== CONFIRM HELPER ===================== */
+function showConfirm(title, text, onConfirm){
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmText').textContent = text;
+  const btn = document.getElementById('confirmBtn');
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener('click', onConfirm);
+  openModal('confirmModal');
+}
+
+/* ===================== EXPORT / IMPORT ===================== */
+function exportData(){
+  const blob = new Blob([JSON.stringify(DB, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `quan-ly-cho-vay-backup-${todayStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+function importData(evt){
+  const file = evt.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    try{
+      const parsed = JSON.parse(e.target.result);
+      if(!parsed.borrowers || !parsed.loans || !parsed.payments) throw new Error('Sai định dạng');
+      showConfirm('Nhập dữ liệu', 'Dữ liệu hiện tại sẽ bị thay thế bởi file đã chọn. Tiếp tục?', ()=>{
+        DB = parsed;
+        saveDB();
+        closeModal('confirmModal');
+        showTab('dashboard');
+      });
+    }catch(err){
+      alert('File không hợp lệ: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  evt.target.value = '';
+}
+
+/* ===================== UTIL ===================== */
+function escapeHtml(s){
+  if(s==null) return '';
+  return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ===================== PWA: ĐĂNG KÝ SERVICE WORKER ===================== */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(err=> console.warn('Không đăng ký được service worker', err));
+  });
+}
+
+/* ===================== INIT ===================== */
+onInterestTypeChange();
+renderDashboard();
+initStorage();
+</script>
+</body>
+</html>
